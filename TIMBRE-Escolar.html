@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timbre Escolar</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f0f6ff;
+    --surface: #ffffff;
+    --surface2: #e4eef9;
+    --border: #c5d9f0;
+    --border2: #9fbedd;
+    --blue: #1a6aff;
+    --blue-dark: #0f3a8a;
+    --blue-mid: #2563eb;
+    --blue-light: #dbeafe;
+    --blue-glow: rgba(26,106,255,0.12);
+    --red: #dc2020;
+    --red-dark: #b01818;
+    --red-light: #fee2e2;
+    --text: #0a1628;
+    --text2: #3a5278;
+    --text3: #7a96b8;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Outfit', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--blue-dark);
+    box-shadow: 0 2px 12px rgba(15,58,138,0.15);
+  }
+
+  .logo { display: flex; align-items: center; gap: 12px; }
+
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: var(--red);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(220,32,32,0.4);
+  }
+
+  .logo-icon svg { width: 20px; height: 20px; }
+  .logo-text h1 { font-size: 17px; font-weight: 600; color: #ffffff; }
+  .logo-text p  { font-size: 12px; color: #90afd4; margin-top: 1px; }
+
+  .header-right { display: flex; align-items: center; gap: 20px; }
+
+  .clock {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: #ffffff;
+    letter-spacing: 0.05em;
+  }
+
+  .date-label { font-size: 12px; color: #90afd4; text-align: right; }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 5px 12px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80;
+  }
+
+  .status-dot.off { background: #94a3b8; box-shadow: none; }
+
+  .status-pill span { font-size: 13px; color: #e2eeff; }
+
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .sidebar {
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    box-shadow: 2px 0 8px rgba(26,106,255,0.06);
+  }
+
+  .sidebar-section {
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .ring-btn {
+    width: 100%;
+    background: var(--red);
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 4px 12px rgba(220,32,32,0.3);
+  }
+
+  .ring-btn:hover { background: var(--red-dark); box-shadow: 0 4px 16px rgba(220,32,32,0.45); }
+  .ring-btn:active { transform: scale(0.98); }
+
+  .ring-btn.ringing { animation: ringpulse 0.6s ease; }
+
+  @keyframes ringpulse {
+    0%   { box-shadow: 0 0 0 0 rgba(220,32,32,0.7); }
+    100% { box-shadow: 0 0 0 28px rgba(220,32,32,0); }
+  }
+
+  .ring-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+  .system-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0;
+  }
+
+  .system-info { display: flex; align-items: center; gap: 10px; }
+  .system-info span { font-size: 14px; color: var(--text); font-weight: 500; }
+
+  .toggle {
+    width: 46px; height: 26px;
+    background: var(--green);
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    border: none;
+  }
+
+  .toggle.off { background: #cbd5e1; }
+
+  .toggle::after {
+    content: '';
+    width: 20px; height: 20px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px; left: 23px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  .toggle.off::after { left: 3px; }
+
+  .next-alarm-box {
+    background: var(--blue-light);
+    border-radius: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border2);
+  }
+
+  .next-time {
+    font-family: var(--mono);
+    font-size: 30px;
+    font-weight: 500;
+    color: var(--blue-dark);
+    line-height: 1;
+  }
+
+  .next-name {
+    font-size: 13px;
+    color: var(--blue-mid);
+    margin-top: 5px;
+    font-weight: 500;
+  }
+
+  .log-entry {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .log-entry:last-child { border-bottom: none; }
+  .log-entry-name { font-size: 13px; color: var(--text2); }
+  .log-entry-time { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+
+  /* API status badge */
+  .api-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 500;
+    padding: 3px 10px; border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .api-badge.ok  { background: var(--green-light); color: var(--green); }
+  .api-badge.err { background: var(--red-light); color: var(--red); }
+  .api-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .content {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    overflow: hidden;
+  }
+
+  .alarms-area {
+    padding: 28px 36px;
+    overflow-y: auto;
+  }
+
+  .alarms-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .alarms-header h2 { font-size: 20px; font-weight: 600; color: var(--text); }
+
+  .add-btn {
+    background: var(--blue);
+    border: none; border-radius: 10px;
+    padding: 9px 18px;
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    color: white; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(26,106,255,0.25);
+  }
+
+  .add-btn:hover { background: var(--blue-mid); box-shadow: 0 2px 12px rgba(26,106,255,0.4); }
+
+  .alarms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+  }
+
+  .alarm-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px rgba(26,106,255,0.05);
+  }
+
+  .alarm-card.active { border-color: var(--border2); box-shadow: 0 2px 10px rgba(26,106,255,0.08); }
+  .alarm-card.inactive { opacity: 0.55; }
+
+  .alarm-top { display: flex; justify-content: space-between; align-items: flex-start; }
+
+  .alarm-time {
+    font-family: var(--mono);
+    font-size: 30px; font-weight: 500;
+    color: var(--blue-dark);
+    line-height: 1;
+  }
+
+  .alarm-name { font-size: 13px; color: var(--text2); margin-top: 4px; font-weight: 500; }
+
+  .alarm-days { display: flex; gap: 4px; flex-wrap: wrap; }
+
+  .day-pill {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .day-pill.on  { background: var(--blue-light); color: var(--blue-mid); }
+  .day-pill.off { background: var(--surface2); color: var(--text3); }
+
+  .alarm-actions { display: flex; gap: 6px; margin-top: 2px; }
+
+  .alarm-del {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-family: var(--sans); font-size: 12px;
+    color: var(--text3);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+
+  .alarm-del:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+  /* Add panel */
+  .add-panel {
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding: 22px 36px;
+    display: none;
+  }
+
+  .add-panel.open { display: block; }
+
+  .add-panel h3 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 18px; }
+
+  .form-row { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .form-group label {
+    font-size: 11px; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;
+  }
+
+  .form-group input[type="time"],
+  .form-group input[type="text"] {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-family: var(--mono); font-size: 15px;
+    color: var(--text); outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 140px;
+  }
+
+  .form-group input[type="text"] { font-family: var(--sans); width: 200px; }
+  .form-group input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-glow); }
+
+  .days-selector { display: flex; gap: 6px; }
+
+  .day-sel {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: none;
+    color: var(--text2);
+    font-family: var(--sans); font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .day-sel.sel { background: var(--red); color: white; border-color: var(--red); }
+
+  .save-btn {
+    background: var(--blue);
+    border: none; border-radius: 10px;
+    padding: 10px 24px;
+    font-family: var(--sans); font-size: 14px; font-weight: 600;
+    color: white; cursor: pointer; height: 38px;
+    transition: background 0.15s;
+    align-self: flex-end;
+    box-shadow: 0 2px 8px rgba(26,106,255,0.25);
+  }
+
+  .save-btn:hover { background: var(--blue-mid); }
+
+  .cancel-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    border-radius: 10px; padding: 10px 18px;
+    font-family: var(--sans); font-size: 14px;
+    color: var(--text2); cursor: pointer; height: 38px;
+    transition: border-color 0.15s;
+    align-self: flex-end;
+  }
+
+  .cancel-btn:hover { border-color: var(--text2); }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--blue-dark);
+    border-radius: 12px;
+    padding: 12px 22px;
+    font-size: 14px; font-weight: 500;
+    color: white;
+    display: flex; align-items: center; gap: 10px;
+    transition: transform 0.3s ease;
+    z-index: 100;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(15,58,138,0.3);
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--red); }
+
+  /* Loading skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+    border-radius: 8px;
+    height: 100px;
+  }
+
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* LOGIN */
+  #loginScreen {
+    position: fixed; inset: 0;
+    background: var(--blue-dark);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999;
+  }
+
+  #loginScreen.hidden { display: none; }
+
+  .login-card {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 40px 36px;
+    width: 100%; max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+
+  .login-logo {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .login-logo .logo-icon {
+    width: 44px; height: 44px;
+    background: var(--red);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(220,32,32,0.4);
+    flex-shrink: 0;
+  }
+
+  .login-logo .logo-icon svg { width: 22px; height: 22px; }
+  .login-logo h1 { font-size: 18px; font-weight: 600; color: var(--text); }
+  .login-logo p  { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  .login-field {
+    display: flex; flex-direction: column; gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .login-field label {
+    font-size: 11px; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;
+  }
+
+  .login-field input {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-family: var(--sans); font-size: 15px;
+    color: var(--text); outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .login-field input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-glow);
+  }
+
+  .login-btn {
+    width: 100%; margin-top: 8px;
+    background: var(--blue);
+    border: none; border-radius: 10px;
+    padding: 13px;
+    font-family: var(--sans); font-size: 15px; font-weight: 600;
+    color: white; cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 12px rgba(26,106,255,0.3);
+  }
+
+  .login-btn:hover { background: var(--blue-mid); }
+
+  .login-error {
+    font-size: 13px; color: var(--red);
+    text-align: center; margin-top: 12px;
+    min-height: 18px;
+  }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Timbre Escolar</h1>
+        <p>Control de timbres — ESP32</p>
+      </div>
+    </div>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <h1>Timbre Escolar</h1>
+      <p>Control de timbres — ESP32</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div>
+      <div class="clock" id="clock">00:00:00 AM</div>
+      <div class="date-label" id="dateLabel">—</div>
+    </div>
+    <div class="status-pill">
+      <span class="status-dot" id="mainDot"></span>
+      <span id="mainStatus">Activo</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="sidebar">
+
+    <div class="sidebar-section">
+      <div class="section-label">API</div>
+      <div id="apiBadge" class="api-badge ok">
+        <span class="api-badge-dot"></span>
+        <span id="apiStatus">Conectado</span>
+      </div>
+      <div class="section-label" style="margin-top:8px;">Control manual</div>
+      <button class="ring-btn" id="ringBtn" onclick="ringNow()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        Sonar timbre ahora
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Sistema</div>
+      <div class="system-row">
+        <div class="system-info">
+          <span class="status-dot" id="sysDot"></span>
+          <span id="sysLabel">Sistema activo</span>
+        </div>
+        <button class="toggle" id="sysToggle" onclick="toggleSystem()"></button>
+      </div>
+    </div>
+
+    <div class="sidebar-section" style="flex:1;">
+      <div class="section-label">Próxima alarma</div>
+      <div class="next-alarm-box">
+        <div class="next-time" id="nextAlarm">—</div>
+        <div class="next-name" id="nextAlarmName">Cargando...</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Log de hoy</div>
+      <div id="logList" style="display:flex;flex-direction:column;">
+        <div class="log-entry">
+          <span class="log-entry-name" style="color:var(--text3);">Sin actividad aún</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="content">
+    <div class="alarms-area">
+      <div class="alarms-header">
+        <h2>Alarmas programadas</h2>
+        <button class="add-btn" onclick="togglePanel()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nueva alarma
+        </button>
+      </div>
+      <div class="alarms-grid" id="alarmsGrid">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    </div>
+
+    <div class="add-panel" id="addPanel">
+      <h3>Nueva alarma</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hora</label>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <select id="newHour" style="font-family:var(--mono);font-size:15px;padding:9px 10px;border-radius:10px;border:1px solid var(--border2);background:var(--bg);color:var(--text);outline:none;"></select>
+            <span style="font-weight:600;color:var(--text2);font-size:18px;">:</span>
+            <select id="newMin" style="font-family:var(--mono);font-size:15px;padding:9px 10px;border-radius:10px;border:1px solid var(--border2);background:var(--bg);color:var(--text);outline:none;"></select>
+            <select id="newAmpm" style="font-family:var(--mono);font-size:15px;padding:9px 10px;border-radius:10px;border:1px solid var(--border2);background:var(--bg);color:var(--text);outline:none;">
+              <option>AM</option>
+              <option>PM</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" id="newName" placeholder="Ej: Recreo, Entrada...">
+        </div>
+        <div class="form-group">
+          <label>Días</label>
+          <div class="days-selector" id="daysSel">
+            <button class="day-sel sel" data-d="0" type="button">L</button>
+            <button class="day-sel sel" data-d="1" type="button">M</button>
+            <button class="day-sel sel" data-d="2" type="button">X</button>
+            <button class="day-sel sel" data-d="3" type="button">J</button>
+            <button class="day-sel sel" data-d="4" type="button">V</button>
+            <button class="day-sel" data-d="5" type="button">S</button>
+            <button class="day-sel" data-d="6" type="button">D</button>
+          </div>
+        </div>
+        <button class="save-btn" onclick="saveAlarm()">Guardar</button>
+        <button class="cancel-btn" onclick="togglePanel()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+  <span id="toastMsg">Timbre activado</span>
+</div>
+
+<script>
+const API_BASE = "https://timbre-escolar-production.up.railway.app/api";
+
+  const DAY_NAMES = ['L','M','X','J','V','S','D'];
+  const DAY_FULL  = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const MONTHS    = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  let alarms    = [];
+  let systemOn  = true;
+  let duration  = 7000;
+  let panelOpen = false;
+  let toastTimer;
+  let log       = [];
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  // Reloj
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = format12h(now.getHours(), now.getMinutes(), now.getSeconds());
+    const dow = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][now.getDay()];
+    document.getElementById('dateLabel').textContent = `${dow}, ${now.getDate()} de ${MONTHS[now.getMonth()]}`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Poblar selects de hora 12h
+  (function() {
+    const hourSel = document.getElementById('newHour');
+    const minSel  = document.getElementById('newMin');
+    for (let i = 1; i <= 12; i++) {
+      const o = document.createElement('option');
+      o.value = pad(i); o.textContent = pad(i);
+      if (i === 7) o.selected = true;
+      hourSel.appendChild(o);
+    }
+    for (let i = 0; i < 60; i++) {
+      const o = document.createElement('option');
+      o.value = pad(i); o.textContent = pad(i);
+      if (i === 30) o.selected = true;
+      minSel.appendChild(o);
+    }
+  })();
+
+
+  function format12h(h, m, s) {
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12  = h % 12 || 12;
+    return s !== undefined
+      ? `${pad(h12)}:${pad(m)}:${pad(s)} ${ampm}`
+      : `${pad(h12)}:${pad(m)} ${ampm}`;
+  }
+
+  function getTodayDow(date) {
+    return date.getDay() === 0 ? 6 : date.getDay() - 1;
+  }
+
+  // 🔥 API
+async function apiFetch(path, options = {}) {
+  const res = await fetch(API_BASE + path, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    ...options
+  });
+
+  if (!res.ok) throw new Error("Error API");
+  return res.json();
+}
+
+  // 🔥 CARGAR SISTEMA
+  async function loadSystem() {
+    try {
+      const sys = await apiFetch('/system');
+      systemOn = sys.systemOn;
+      duration = sys.duration;
+
+      document.getElementById('sysToggle').classList.toggle('off', !systemOn);
+      document.getElementById('sysDot').classList.toggle('off', !systemOn);
+      document.getElementById('mainDot').classList.toggle('off', !systemOn);
+      document.getElementById('sysLabel').textContent = systemOn ? 'Sistema activo' : 'Sistema pausado';
+      document.getElementById('mainStatus').textContent = systemOn ? 'Activo' : 'Pausado';
+    } catch {
+      console.log("Error cargando sistema");
+    }
+  }
+
+  // 🔥 TOGGLE SISTEMA REAL
+  async function toggleSystem() {
+    try {
+      await apiFetch('/system', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          systemOn: !systemOn,
+          duration
+        })
+      });
+      loadSystem();
+      showToast(systemOn ? 'Sistema pausado' : 'Sistema activado');
+    } catch {
+      showToast("Error sistema", true);
+    }
+  }
+
+  // 🔥 ALARMAS
+  async function loadAlarms() {
+    try {
+      alarms = await apiFetch('/alarms');
+      renderAlarms();
+      updateNextAlarm(new Date());
+    } catch {
+      console.log("Error alarmas");
+    }
+  }
+
+  async function saveAlarm() {
+    const name = document.getElementById("newName").value || "Timbre";
+    const days = [...document.querySelectorAll(".day-sel.sel")].map(b => parseInt(b.dataset.d));
+
+    let h = parseInt(document.getElementById('newHour').value);
+    const m = document.getElementById('newMin').value;
+    const ampm = document.getElementById('newAmpm').value;
+    if (ampm === 'PM' && h !== 12) h += 12;
+    if (ampm === 'AM' && h === 12) h = 0;
+    const time = `${pad(h)}:${m}`;
+
+    await apiFetch('/alarms', {
+      method: "POST",
+      body: JSON.stringify({ time, name, days })
+    });
+
+    loadAlarms();
+    togglePanel();
+  }
+
+  async function deleteAlarm(id) {
+    await apiFetch(`/alarms/${id}`, { method: "DELETE" });
+    loadAlarms();
+  }
+
+  async function toggleAlarm(id) {
+    await apiFetch(`/alarms/${id}/toggle`, { method: "PATCH" });
+    loadAlarms();
+  }
+
+  // 🔥 TIMBRE AHORA (usa backend)
+async function ringNow(name = 'Manual') {
+  try {
+    const data = await apiFetch('/timbre/manual', {
+      method: 'POST'
+    });
+
+    if (data.ring) {
+      showToast('🔔 Timbre activado manualmente');
+      addLog(name);
+    } else {
+      showToast('No se pudo activar el timbre', true);
+    }
+  } catch (error) {
+    console.error(error);
+    showToast('Error backend', true);
+  }
+}
+
+  // 🔥 RENDER
+  function renderAlarms() {
+    const grid = document.getElementById('alarmsGrid');
+
+    grid.innerHTML = alarms.map(a => {
+      const [h, m] = a.time.split(':').map(Number);
+
+      return `
+      <div class="alarm-card ${a.active ? 'active' : 'inactive'}">
+        <div class="alarm-top">
+          <div>
+            <div class="alarm-time">${format12h(h, m)}</div>
+            <div class="alarm-name">${a.name}</div>
+          </div>
+          <button class="toggle ${a.active ? '' : 'off'}" onclick="toggleAlarm('${a.id}')"></button>
+        </div>
+        <div class="alarm-days">
+          ${DAY_NAMES.map((d,i)=>`<div class="day-pill ${a.days.includes(i)?'on':'off'}">${d}</div>`).join('')}
+        </div>
+        <button onclick="deleteAlarm('${a.id}')">Eliminar</button>
+      </div>`;
+    }).join('');
+  }
+
+  function updateNextAlarm(now) {
+    if (!systemOn) return;
+
+    const nowM = now.getHours()*60 + now.getMinutes();
+    const dow  = getTodayDow(now);
+
+    let best=null, bestM=99999;
+
+    alarms.forEach(a=>{
+      if(!a.active || !a.days.includes(dow)) return;
+      const [h,m]=a.time.split(':').map(Number);
+      const mins=h*60+m;
+      if(mins>nowM && mins<bestM){best=a; bestM=mins;}
+    });
+
+    if(best){
+      const [h,m]=best.time.split(':').map(Number);
+      document.getElementById('nextAlarm').textContent=format12h(h,m);
+      document.getElementById('nextAlarmName').textContent=best.name;
+    }
+  }
+
+  function addLog(name) {
+    const now = new Date();
+    log.unshift({ name, time: `${pad(now.getHours())}:${pad(now.getMinutes())}` });
+  }
+
+  function togglePanel(){
+    panelOpen=!panelOpen;
+    document.getElementById('addPanel').classList.toggle('open',panelOpen);
+  }
+
+  function showToast(msg, err=false){
+    clearTimeout(toastTimer);
+    const t=document.getElementById('toast');
+    document.getElementById('toastMsg').textContent=msg;
+    t.classList.toggle('error',err);
+    t.classList.add('show');
+    toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+  }
+
+  // LOGIN
+  const CREDS = { user: 'admin', pass: '1111' };
+
+  function doLogin() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    if (u === CREDS.user && p === CREDS.pass) {
+      document.getElementById('loginScreen').classList.add('hidden');
+      sessionStorage.setItem('auth', '1');
+    } else {
+      document.getElementById('loginError').textContent = 'Usuario o contraseña incorrectos';
+    }
+  }
+
+  // Enter en el input de contraseña
+  document.getElementById('loginPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  // INIT
+  if (sessionStorage.getItem('auth') === '1') {
+    document.getElementById('loginScreen').classList.add('hidden');
+  }
+  loadSystem();
+  loadAlarms();
+  setInterval(()=>updateNextAlarm(new Date()),60000);
+</script>
+
+</body>
+</html>
